@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Império ERM Studio</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#05070d;color:#f1f5f9;padding:calc(env(safe-area-inset-top,0px) + 8px) 14px calc(40px + env(safe-area-inset-bottom,0px))}
+main{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:21px;font-weight:800;margin:14px 0 0}h1 span{color:#f43f5e}
+h2{font-size:13px;margin:0;color:#cbd5e1}
+.sub{font-size:12px;font-weight:700;margin:2px 0 0}
+.card{background:#0e1422;border:1px solid #1e293b;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.inp{background:#070b14;border:1px solid #263248;color:#f1f5f9;border-radius:14px;padding:11px 12px;width:100%;font-size:14px}
+.inp:focus{outline:none;border-color:#fe2c55}
+.btn{background:linear-gradient(135deg,#fe2c55,#9333ea);border:0;color:#fff;border-radius:16px;font-weight:800;font-size:14px;padding:15px;width:100%}
+.btn:disabled{opacity:.5}
+.btn2{background:#1e293b;border:0;color:#fca5a5;border-radius:14px;font-weight:700;font-size:13px;padding:11px;width:100%}
+.seg{display:flex;background:#00000066;padding:4px;border-radius:16px;gap:4px}
+.seg button{flex:1;padding:9px 4px;border:0;background:none;border-radius:12px;font-size:12px;font-weight:700;color:#94a3b8}
+.seg button.on{background:#1e293b;color:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{font-size:11px;font-weight:700;color:#fbbf24;display:block;margin-bottom:5px}
+.hidden{display:none!important}
+video{width:100%;max-height:300px;border-radius:12px;background:#000}
+.drop{display:block;border:2px dashed #475569;border-radius:16px;padding:18px;text-align:center;font-size:13px;font-weight:700;cursor:pointer}
+.dl{display:block;background:#059669;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:13px;border-radius:12px;text-decoration:none}
+.msg{font-size:12px;color:#34d399;margin:0}.warn{font-size:12px;color:#fbbf24;margin:0}
+.cap{background:#00000066;border-radius:12px;padding:12px;font-size:12px;color:#cbd5e1;white-space:pre-line;margin:0}
+#status{font-size:12px;font-weight:700;text-align:center;color:#94a3b8;margin:0}
+.note{font-size:11px;color:#94a3b8;margin:0;line-height:1.4}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>✂️ IMPÉRIO ERM <span>Studio</span></h1>
+  <p class="sub" id="modeinfo" style="color:#34d399">🟢 Online: IA transcreve, cria gancho e legenda animada</p>
+</header>
+
+<div class="card">
+  <h2>Modo de trabalho</h2>
+  <div class="seg" id="wmode">
+    <button class="on" data-v="online">🌐 Online (IA)</button>
+    <button data-v="offline">📴 Offline</button>
+  </div>
+  <p class="note" id="wnote">Precisa de internet e de uma chave Groq (começa com gsk_) ou OpenAI.</p>
+  <div id="keybox"><input id="gkey" type="password" class="inp" placeholder="Chave Groq ou OpenAI"></div>
+</div>
+
+<div class="card">
+  <h2>1. Vídeo de origem</h2>
+  <div class="seg" id="smode">
+    <button class="on" data-v="upload">Enviar MP4 (local)</button>
+    <button data-v="link">Link direto .mp4</button>
+  </div>
+  <div id="m-up"><label class="drop"><span id="uplabel">Toque para escolher o vídeo</span><input id="file" type="file" accept="video/*" class="hidden"></label></div>
+  <div id="m-link" class="hidden"><input id="url" class="inp" placeholder="https://…/video.mp4"><p class="note" style="margin-top:6px">Links externos só funcionam se o site permitir (CORS). Se falhar, baixe e envie o arquivo.</p></div>
+  <video id="prev" controls playsinline muted></video>
+</div>
+
+<div class="card">
+  <h2>2. Estratégia de retenção</h2>
+  <input id="theme" class="inp" value="Motivação e Mentalidade" placeholder="Tema do vídeo">
+  <input id="hook" class="inp" placeholder="Gancho manual (opcional, substitui o automático)">
+  <input id="cta" class="inp" value="SEGUE PARA MAIS" placeholder="Texto final (CTA)">
+  <div class="row">
+    <div><label>Qtd de cortes</label>
+      <select id="count" class="inp"><option>1</option><option>2</option><option selected>3</option><option>5</option></select></div>
+    <div><label style="color:#fb7185">Duração</label>
+      <input id="len" type="range" min="15" max="180" step="5" value="30" style="width:100%;accent-color:#fe2c55">
+      <div id="lenv" style="text-align:center;font-weight:800;color:#fb7185;font-size:14px">30 segundos</div></div>
+  </div>
+  <button id="run" class="btn">🚀 GERAR CORTES</button>
+  <button id="stop" class="btn2 hidden">⏹ Cancelar</button>
+  <p id="status"></p>
+  <p class="note">Mantenha a tela ligada e o app aberto durante a gravação.</p>
+</div>
+
+<div id="out" style="display:flex;flex-direction:column;gap:14px"></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let wmode = 'online', smode = 'upload', file = null, cancelled = false;
+
+try { $('gkey').value = localStorage.getItem('erm_gkey_online') || ''; } catch (e) {}
+$('gkey').addEventListener('input', () => { try { localStorage.setItem('erm_gkey_online', $('gkey').value.trim()); } catch (e) {} });
+
+function seg(id, cb) {
+  const bs = $(id).querySelectorAll('button');
+  bs.forEach(b => b.onclick = () => { bs.forEach(x => x.classList.remove('on')); b.classList.add('on'); cb(b.dataset.v); });
+}
+seg('wmode', v => {
+  wmode = v;
+  const on = v === 'online';
+  $('keybox').classList.toggle('hidden', !on);
+  $('wnote').textContent = on ? 'Precisa de internet e de uma chave Groq (começa com gsk_) ou OpenAI.'
+    : 'Sem internet e sem chave: cortes automáticos com ganchos prontos. Sem legenda falada (isso exige IA).';
+  $('modeinfo').textContent = on ? '🟢 Online: IA transcreve, cria gancho e legenda animada' : '📴 Offline: tudo roda no seu aparelho';
+  $('modeinfo').style.color = on ? '#34d399' : '#fbbf24';
+});
+seg('smode', v => {
+  smode = v;
+  $('m-up').classList.toggle('hidden', v !== 'upload');
+  $('m-link').classList.toggle('hidden', v !== 'link');
+});
+$('url').addEventListener('change', () => { const u = $('url').value.trim(); if (u) $('prev').src = u; });
+$('file').addEventListener('change', e => {
+  file = e.target.files[0];
+  if (file) { $('uplabel').textContent = file.name; $('prev').src = URL.createObjectURL(file); }
+});
+$('len').addEventListener('input', () => { $('lenv').textContent = $('len').value + ' segundos'; });
+$('stop').onclick = () => { cancelled = true; setStatus('Cancelando…'); };
+const setStatus = t => $('status').textContent = t;
+
+/* ---------- Ganchos prontos (usados offline e como reserva) ---------- */
+const GANCHOS = {
+  motivacao: ['SE VOCÊ ESTÁ CANSADO, ESCUTE ISSO', 'NINGUÉM TE DISSE ISSO', 'ISSO MUDOU MINHA MENTE', 'PARE DE DESISTIR AGORA', 'ASSISTA ATÉ O FINAL'],
+  financas: ['O MAIOR ERRO COM DINHEIRO', 'A ESTRATÉGIA SECRETA', 'PARE DE PERDER DINHEIRO', 'ELES NÃO QUEREM QUE VOCÊ SAIBA', 'FAÇA ISSO COM SEU SALÁRIO'],
+  saude: ['SEU CORPO ESTÁ TE AVISANDO', 'FAÇA ISSO TODA MANHÃ', 'O ERRO QUE TODOS COMETEM', 'ISSO MUDOU MINHA SAÚDE'],
+  geral: ['ASSISTA ATÉ O FINAL', 'ISSO VAI TE SURPREENDER', 'NINGUÉM FALA SOBRE ISSO', 'PRESTE ATENÇÃO NISSO', 'VOCÊ PRECISA VER ISSO']
+};
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function gancho(theme) {
+  const t = norm(theme);
+  const k = /motiv|mentalid|disciplin|sucesso/.test(t) ? 'motivacao' : /financ|dinheiro|invest|renda/.test(t) ? 'financas' : /saude|treino|dieta|corpo/.test(t) ? 'saude' : 'geral';
+  const l = GANCHOS[k]; return l[Math.floor(Math.random() * l.length)];
+}
+function tags(theme) {
+  const w = norm(theme).split(/[^a-z0-9]+/).filter(x => x.length > 3).slice(0, 3).map(x => '#' + x);
+  return [...w, '#cortes', '#viral', '#fy'];
+}
+
+/* ---------- IA (online) ---------- */
+const isGroq = k => k.startsWith('gsk_');
+async function aiCaption(txt, theme, key) {
+  const system = `Você é o diretor do 'Império ERM Studio'. Crie um gancho explosivo (máx. 6 palavras, em português) para este trecho, com base no tema. Exemplos de estilo: ${Object.values(GANCHOS).flat().slice(0, 8).join(' | ')}. Responda só JSON: {"gancho_tela":"TEXTO","legenda":"texto curto","hashtags":["#tag1","#tag2"]}`;
+  let models = ['gpt-4o-mini'];
+  if (isGroq(key)) {
+    models = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+    try {   // pergunta à Groq quais modelos de chat esta chave pode usar
+      const r = await fetch('https://api.groq.com/openai/v1/models', { headers: { Authorization: 'Bearer ' + key } });
+      const ids = ((await r.json()).data || []).map(m => m.id).filter(id => !/whisper|guard|tts|playai|orpheus|embed|distil/i.test(id));
+      models = [...models.filter(m => ids.includes(m)), ...ids.filter(id => !models.includes(id))];
+    } catch (e) {}
+  }
+  const url = isGroq(key) ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
+  let lastErr; const errs = [];
+  for (const model of models.slice(0, 4)) {
+    try {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
+        body: JSON.stringify({ model, temperature: 0.7, response_format: { type: 'json_object' },
+          messages: [{ role: 'system', content: system }, { role: 'user', content: `Tema: ${theme}\nFala: ${txt.slice(0, 3000)}` }] })
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(`[${model}] ${j.error?.message || r.status}`);
+      const o = JSON.parse(j.choices[0].message.content);
+      let h = o.hashtags; if (typeof h === 'string') h = h.split(/\s+/); if (!Array.isArray(h)) h = [];
+      return { gancho: String(o.gancho_tela || '').trim(), legenda: String(o.legenda || '').trim(), hashtags: h };
+    } catch (e) { lastErr = e; errs.push(e.message); }
+  }
+  throw new Error(errs.join(' | ') || 'Nenhum modelo de chat liberado nesta chave Groq.');
+}
+
+async function transcribe(blob, name, key) {
+  if (blob.size > 24 * 1024 * 1024) throw new Error('Áudio acima de 25 MB. Reduza a duração.');
+  const fd = new FormData();
+  fd.append('file', blob, name);
+  fd.append('model', isGroq(key) ? 'whisper-large-v3-turbo' : 'whisper-1');
+  fd.append('response_format', 'verbose_json');
+  fd.append('timestamp_granularities[]', 'word');
+  fd.append('language', 'pt');
+  const res = await fetch(isGroq(key) ? 'https://api.groq.com/openai/v1/audio/transcriptions' : 'https://api.openai.com/v1/audio/transcriptions',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + key }, body: fd });
+  const j = await res.json();
+  if (!res.ok) throw new Error(`[transcrição] ${j.error?.message || res.status}`);
+  const w = j.words || [], out = [];
+  for (let i = 0; i < w.length; i += 2) {
+    const g = w.slice(i, i + 2);
+    out.push({ t: g[0].start, e: g[g.length - 1].end, x: g.map(z => z.word.trim()).join(' ').toUpperCase() });
+  }
+  return out;
+}
+
+/* ---------- Áudio do trecho ---------- */
+const seek = (v, t) => new Promise(r => {
+  if (Math.abs(v.currentTime - t) < 0.05) return r();
+  const f = () => { v.removeEventListener('seeked', f); r(); };
+  v.addEventListener('seeked', f); v.currentTime = t; setTimeout(r, 3000);
+});
+
+let decoded = null;
+async function wavFromSource(src, ac, start, len) {   // rápido: sem reproduzir o vídeo
+  if (!decoded) decoded = await ac.decodeAudioData(await (await fetch(src)).arrayBuffer());
+  const sr = decoded.sampleRate, ch = decoded.getChannelData(0), ratio = sr / 16000;
+  const from = Math.floor(start * sr), n = Math.floor(Math.min(len, decoded.duration - start) * 16000);
+  const pcm = new Int16Array(n);
+  for (let i = 0; i < n; i++) {
+    let s = 0, c = 0; const a = from + Math.floor(i * ratio);
+    for (let k = 0; k < ratio && a + k < ch.length; k++) { s += ch[a + k]; c++; }
+    pcm[i] = Math.max(-1, Math.min(1, c ? s / c : 0)) * 32767;
+  }
+  const buf = new ArrayBuffer(44 + n * 2), dv = new DataView(buf);
+  const str = (o, s) => [...s].forEach((c, i) => dv.setUint8(o + i, c.charCodeAt(0)));
+  str(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+  dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+  dv.setUint32(24, 16000, true); dv.setUint32(28, 32000, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+  str(36, 'data'); dv.setUint32(40, n * 2, true);
+  new Int16Array(buf, 44).set(pcm);
+  return new Blob([buf], { type: 'audio/wav' });
+}
+async function audioRealtime(v, dest, start, len) {   // reserva: grava tocando o vídeo
+  const rec = new MediaRecorder(dest.stream);
+  const ch = []; rec.ondataavailable = e => { if (e.data.size) ch.push(e.data); };
+  const done = new Promise(r => rec.onstop = r);
+  await seek(v, start); rec.start(); await v.play();
+  await new Promise(r => { const ck = () => { if (v.currentTime - start >= len || v.ended || cancelled) { v.pause(); rec.stop(); r(); } else setTimeout(ck, 200); }; ck(); });
+  await done; return new Blob(ch, { type: rec.mimeType || 'audio/webm' });
+}
+
+/* ---------- Desenho ---------- */
+function wrap(g, txt, max) {
+  const o = []; let l = '';
+  for (const x of txt.split(' ')) { const t = l ? l + ' ' + x : x; if (g.measureText(t).width > max && l) { o.push(l); l = x; } else l = t; }
+  o.push(l); return o;
+}
+function strokeText(g, txt, y, font, fill, lw) {
+  g.font = font; g.lineWidth = lw; g.lineJoin = 'round'; g.strokeStyle = '#000'; g.fillStyle = fill;
+  g.strokeText(txt, 360, y); g.fillText(txt, 360, y);
+}
+function drawOverlay(g, caps, t, hook, cta, dur) {
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  if (t < 3 && hook) {
+    g.font = '900 46px sans-serif';
+    wrap(g, hook, 620).forEach((ln, i) => strokeText(g, ln, 200 + i * 56, '900 46px sans-serif', '#fff', 10));
+  }
+  if (t > dur - 3 && cta) strokeText(g, cta, 1080, '900 38px sans-serif', '#10b981', 10);
+  const p = caps.find(p => t >= p.t && t <= p.e + 0.3);
+  if (p) strokeText(g, p.x, 640, '900 68px sans-serif', '#ffe600', 18);
+}
+
+function pickMime() {
+  const c = ['video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
+  return c.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+}
+
+/* ---------- Principal ---------- */
+$('run').onclick = async () => {
+  const key = $('gkey').value.replace(/[^\x20-\x7E]/g, '').trim();
+  const online = wmode === 'online';
+  if (online && !key) return setStatus('❌ Cole a chave Groq/OpenAI ou troque para o modo Offline.');
+  if (smode === 'upload' && !file) return setStatus('❌ Selecione um vídeo primeiro.');
+  if (smode === 'link' && !$('url').value.trim()) return setStatus('❌ Cole o link do vídeo.');
+  if (!window.MediaRecorder) return setStatus('❌ Este navegador não suporta gravação de vídeo.');
+
+  const n = +$('count').value, L0 = +$('len').value, theme = $('theme').value.trim() || 'Motivação';
+  const manual = $('hook').value.trim().toUpperCase(), cta = $('cta').value.trim().toUpperCase();
+  cancelled = false; decoded = null;
+  $('run').disabled = true; $('stop').classList.remove('hidden'); $('out').innerHTML = '';
+
+  try {
+    setStatus('⚙️ Carregando vídeo…');
+    const src = smode === 'link' ? $('url').value.trim() : URL.createObjectURL(file);
+    const v = document.createElement('video');
+    v.crossOrigin = 'anonymous'; v.playsInline = true; v.preload = 'auto'; v.src = src;
+    await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = () => rej(new Error('Não foi possível abrir o vídeo (link bloqueado ou formato inválido).')); });
+
+    const D = v.duration, L = Math.max(3, Math.min(L0, Math.floor(D)));
+    const step = n > 1 ? Math.max(0, (D - L) / (n - 1)) : 0;
+    const ac = new (window.AudioContext || window.webkitAudioContext)(); await ac.resume();
+    const dest = ac.createMediaStreamDestination(); ac.createMediaElementSource(v).connect(dest);
+    const cvs = document.createElement('canvas'); cvs.width = 720; cvs.height = 1280;
+    const g = cvs.getContext('2d');
+    const mime = pickMime(), ext = mime.includes('mp4') ? 'mp4' : 'webm';
+
+    for (let i = 1; i <= n && !cancelled; i++) {
+      const start = Math.round((i - 1) * step);
+      const d = document.createElement('div'); d.className = 'card';
+      d.innerHTML = `<b style="font-size:14px">Corte #${i}</b><p class="msg"></p><p class="warn hidden"></p>
+        <div class="box hidden" style="display:none;flex-direction:column;gap:8px"><video class="vid" controls playsinline></video><a class="dl">⬇️ Salvar vídeo</a><button class="btn2 d2" style="color:#a7f3d0">💾 Salvar (método 2)</button><button class="btn2 sh" style="color:#a7f3d0">📤 Compartilhar</button></div>
+        <p class="cap"></p>`;
+      $('out').appendChild(d);
+      const msg = d.querySelector('.msg'), warn = d.querySelector('.warn');
+      const alerta = t => { warn.textContent = '⚠️ ' + t; warn.classList.remove('hidden'); };
+
+      let caps = [], hook = manual || gancho(theme), legenda = `🔥 ${hook}\n\n${tags(theme).join(' ')}`;
+
+      if (online) {
+        try {
+          msg.textContent = 'IA: extraindo o áudio…';
+          let blob, name;
+          try { blob = await wavFromSource(src, ac, start, L); name = 'clip.wav'; }
+          catch (e) { msg.textContent = 'IA: ouvindo o trecho…'; blob = await audioRealtime(v, dest, start, L); name = 'clip.' + (blob.type.includes('mp4') ? 'mp4' : 'webm'); }
+          if (cancelled) break;
+          msg.textContent = 'IA: transcrevendo…';
+          caps = await transcribe(blob, name, key);
+          if (!caps.length) alerta('Nenhuma fala detectada neste trecho. Usei um gancho pronto.');
+          else {
+            msg.textContent = 'IA: criando o gancho…';
+            const a = await aiCaption(caps.map(z => z.x).join(' '), theme, key);
+            if (a.gancho && !manual) hook = a.gancho.toUpperCase();
+            legenda = `🔥 ${hook}\n\n${a.legenda}\n\n${(a.hashtags.length ? a.hashtags : tags(theme)).join(' ')}`;
+          }
+        } catch (e) { alerta('IA indisponível neste corte: ' + e.message + ' — continuei no modo offline.'); caps = []; }
+      }
+      d.querySelector('.cap').textContent = legenda;
+      if (cancelled) break;
+
+      msg.textContent = '🎬 Gravando o corte…';
+      await seek(v, start);
+      const stream = cvs.captureStream(30);
+      dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 5000000 } : {});
+      const chunks = []; rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+      const done = new Promise(r => rec.onstop = r);
+      rec.start(); await v.play();
+
+      await new Promise(fin => {
+        const draw = () => {
+          const t = v.currentTime - start, vw = v.videoWidth, vh = v.videoHeight;
+          const sc = Math.max(720 / vw, 1280 / vh), dw = vw * sc, dh = vh * sc;
+          g.fillStyle = '#05070d'; g.fillRect(0, 0, 720, 1280);
+          g.drawImage(v, (720 - dw) / 2, (1280 - dh) / 2, dw, dh);
+          g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(0, 0, 720, 1280);
+          drawOverlay(g, caps, t, hook, cta, L);
+          g.fillStyle = '#fe2c55'; g.fillRect(0, 1266, 720 * Math.min(1, Math.max(0, t / L)), 14);
+          msg.textContent = `Gravando… ${Math.floor(t)}/${L}s`;
+          if (t >= L || v.ended || cancelled) { v.pause(); rec.stop(); fin(); } else requestAnimationFrame(draw);
+        };
+        draw();
+      });
+      await done;
+      if (cancelled) break;
+      const blob = new Blob(chunks, { type: mime || 'video/webm' });
+      if (blob.size < 20000) { msg.textContent = '❌ A gravação saiu vazia. Tente de novo com o app aberto e a tela ligada.'; continue; }
+      const url = URL.createObjectURL(blob);
+      d.querySelector('.vid').src = url;
+      d.querySelector('.d2').onclick = () => {
+        const fr = new FileReader();
+        fr.onload = () => { const a2 = document.createElement('a'); a2.href = fr.result; a2.download = `C
